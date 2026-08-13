@@ -128,7 +128,7 @@ export default function AnalyticsScreen() {
             <View style={{ flexDirection: "row", alignItems: "baseline", gap: 10 }}>
               <Amount value={money(data.totals.net)} currency={currency} size="lg" />
               <Text style={{ color: theme.textSubtle, fontSize: 14, fontWeight: "600" }}>
-                {data.totals.savingsRate === null
+                {data.totals.savingsRate == null
                   ? "— rate"
                   : `${data.totals.savingsRate.toFixed(0)}% rate`}
               </Text>
@@ -296,13 +296,13 @@ function SavingsRateHistory({
           <View key={point.month} style={{ flex: 1, alignItems: "center", gap: 2 }}>
             <Text
               style={{
-                color: point.savingsRate === null ? theme.textSubtle : theme.text,
-                fontSize: 12,
+                color: point.savingsRate == null ? theme.textSubtle : theme.text,
+                fontSize: 13,
                 fontWeight: "600",
                 fontVariant: ["tabular-nums"],
               }}
             >
-              {point.savingsRate === null ? "—" : `${point.savingsRate.toFixed(0)}%`}
+              {point.savingsRate == null ? "—" : `${point.savingsRate.toFixed(0)}%`}
             </Text>
             <Text style={{ color: theme.textSubtle, fontSize: 10 }}>{label}</Text>
           </View>

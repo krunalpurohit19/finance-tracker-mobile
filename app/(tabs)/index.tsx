@@ -101,10 +101,10 @@ export default function DashboardScreen() {
           <Amount value={money(data.savings)} currency={currency} size="lg" />
           <Text style={{ color: theme.textSubtle, fontSize: 14, fontWeight: "600" }}>
             {/* null means undefined, not zero — never render "0%" here. */}
-            {data.savingsRate === null ? "—" : `${data.savingsRate.toFixed(0)}%`} rate
+            {data.savingsRate == null ? "—" : `${data.savingsRate.toFixed(0)}%`} rate
           </Text>
         </View>
-        {data.savingsRate === null ? (
+        {data.savingsRate == null ? (
           <Text style={{ color: theme.textMuted, fontSize: 13, lineHeight: 19 }}>
             Your savings rate needs some income to measure against, so it stays undefined until
             you record some.

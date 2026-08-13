@@ -72,7 +72,7 @@ export default function BudgetsScreen() {
     );
   }
 
-  const overall = data.find((b) => b.categoryId === null);
+  const overall = data.find((b) => b.categoryId == null);
   const categories = data.filter((b) => b.categoryId !== null);
 
   return (

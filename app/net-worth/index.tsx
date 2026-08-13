@@ -204,7 +204,7 @@ function MonthChange({ data }: { data: NetWorth }) {
         showSign
         tone={up ? "income" : "expense"}
       />
-      {data.monthChangePercent !== null ? (
+      {data.monthChangePercent != null ? (
         <Text style={{ color: theme.textSubtle, fontSize: 13, fontVariant: ["tabular-nums"] }}>
           ({up ? "+" : ""}
           {data.monthChangePercent.toFixed(1)}%)

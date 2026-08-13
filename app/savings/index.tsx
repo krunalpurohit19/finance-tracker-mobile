@@ -83,7 +83,7 @@ export default function SavingsScreen() {
           <Card eyebrow="This month">
             <Amount value={money(data.thisMonth)} currency={currency} size="md" />
             <Text style={{ color: theme.textSubtle, fontSize: 12 }}>
-              {data.thisMonthRate === null
+              {data.thisMonthRate == null
                 ? "— rate"
                 : `${data.thisMonthRate.toFixed(0)}% rate`}
             </Text>
