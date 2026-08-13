@@ -84,6 +84,12 @@ export default function SettingsScreen() {
           href: "/accounts",
         },
         {
+          icon: "pricetag-outline",
+          label: "Categories",
+          value: String(data.counts.categories),
+          href: "/categories",
+        },
+        {
           icon: "repeat-outline",
           label: "Recurring rules",
           value: String(data.counts.recurring),
