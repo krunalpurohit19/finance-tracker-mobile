@@ -52,60 +52,62 @@ const queryClient = new QueryClient({
   },
 });
 
-export default function RootLayout() {
+function RootLayoutNav() {
   const theme = useTheme();
-  const scheme = useColorScheme();
   const { data: session, isPending } = useSession();
 
   useAuthGate(isPending, Boolean(session));
 
   return (
+    <SafeAreaProvider>
+      <StatusBar style={theme.scheme === "dark" ? "light" : "dark"} />
+
+      {isPending ? (
+        <View
+          style={{
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: theme.background,
+          }}
+        >
+          <ActivityIndicator color={theme.brand} />
+        </View>
+      ) : (
+        <Stack
+          screenOptions={{
+            headerStyle: { backgroundColor: theme.background },
+            headerTintColor: theme.text,
+            headerShadowVisible: false,
+            contentStyle: { backgroundColor: theme.background },
+          }}
+        >
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="accounts" options={{ headerShown: false }} />
+          <Stack.Screen name="budgets" options={{ headerShown: false }} />
+          <Stack.Screen name="net-worth" options={{ headerShown: false }} />
+          <Stack.Screen name="recurring" options={{ headerShown: false }} />
+          <Stack.Screen name="savings" options={{ headerShown: false }} />
+          <Stack.Screen name="settings" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="transaction/new"
+            options={{
+              presentation: "modal",
+              title: "Add transaction",
+            }}
+          />
+        </Stack>
+      )}
+    </SafeAreaProvider>
+  );
+}
+
+export default function RootLayout() {
+  return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>
-        <SafeAreaProvider>
-          <StatusBar style={scheme === "dark" ? "light" : "dark"} />
-
-          {isPending ? (
-            <View
-              style={{
-                flex: 1,
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: theme.background,
-              }}
-            >
-              <ActivityIndicator color={theme.brand} />
-            </View>
-          ) : (
-            <Stack
-              screenOptions={{
-                headerStyle: { backgroundColor: theme.background },
-                headerTintColor: theme.text,
-                headerShadowVisible: false,
-                contentStyle: { backgroundColor: theme.background },
-              }}
-            >
-              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="accounts" options={{ headerShown: false }} />
-              <Stack.Screen name="budgets" options={{ headerShown: false }} />
-              <Stack.Screen name="net-worth" options={{ headerShown: false }} />
-              <Stack.Screen name="recurring" options={{ headerShown: false }} />
-              <Stack.Screen name="savings" options={{ headerShown: false }} />
-              <Stack.Screen name="settings" options={{ headerShown: false }} />
-              <Stack.Screen
-                name="transaction/new"
-                options={{
-                  // A full-screen sheet is the right shape for fast entry on a
-                  // phone: it keeps the keyboard path short and is dismissable
-                  // with a downward swipe.
-                  presentation: "modal",
-                  title: "Add transaction",
-                }}
-              />
-            </Stack>
-          )}
-        </SafeAreaProvider>
+        <RootLayoutNav />
       </QueryClientProvider>
     </GestureHandlerRootView>
   );

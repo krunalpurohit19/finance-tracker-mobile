@@ -1,4 +1,5 @@
 import { useColorScheme } from "react-native";
+import { useSettings } from "../features/settings/queries";
 
 /**
  * Design tokens in TypeScript, for the places Tailwind classes cannot reach:
@@ -106,7 +107,14 @@ const darkTheme: Theme = {
 };
 
 export function useTheme(): Theme {
-  return useColorScheme() === "dark" ? darkTheme : lightTheme;
+  const scheme = useColorScheme();
+  const { data: settings } = useSettings();
+  
+  const pref = settings?.preferences?.theme || "SYSTEM";
+  
+  if (pref === "LIGHT") return lightTheme;
+  if (pref === "DARK") return darkTheme;
+  return scheme === "dark" ? darkTheme : lightTheme;
 }
 
 export { lightTheme, darkTheme };
