@@ -27,12 +27,10 @@ export function EmptyState({ icon, title, body, actionLabel, onAction }: EmptySt
           borderRadius: 28,
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: theme.surfaceElevated,
-          borderWidth: 1,
-          borderColor: theme.border,
+          backgroundColor: theme.brandSoft,
         }}
       >
-        <Ionicons name={icon} size={26} color={theme.textSubtle} />
+        <Ionicons name={icon} size={26} color={theme.brand} />
       </View>
 
       <Text style={{ color: theme.text, fontSize: 17, fontWeight: "600", textAlign: "center" }}>
@@ -57,9 +55,10 @@ export function EmptyState({ icon, title, body, actionLabel, onAction }: EmptySt
           onPress={onAction}
           style={{
             marginTop: 8,
-            paddingHorizontal: 18,
-            paddingVertical: 11,
-            borderRadius: 10,
+            minHeight: 44,
+            justifyContent: "center",
+            paddingHorizontal: 20,
+            borderRadius: 999,
             backgroundColor: theme.brand,
           }}
         >

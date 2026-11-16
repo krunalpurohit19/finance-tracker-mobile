@@ -1,4 +1,5 @@
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import * as Haptics from "expo-haptics";
 
 import { useTheme } from "../theme/tokens";
 
@@ -29,16 +30,20 @@ export function Button({
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ disabled: inactive, busy: loading }}
-      onPress={onPress}
+      onPress={() => {
+        // Haptics mark primary actions only; a failure to buzz is not an error.
+        if (primary) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+        onPress();
+      }}
       disabled={inactive}
       style={({ pressed }) => ({
-        paddingVertical: 14,
-        borderRadius: 12,
+        minHeight: 50,
+        paddingVertical: 13,
+        paddingHorizontal: 16,
+        borderRadius: 14,
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: primary ? theme.brand : theme.surface,
-        borderWidth: primary ? 0 : 1,
-        borderColor: theme.border,
+        backgroundColor: primary ? theme.brand : theme.fill,
         opacity: inactive ? 0.5 : pressed ? 0.85 : 1,
       })}
     >

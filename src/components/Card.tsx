@@ -1,41 +1,24 @@
 import type { ReactNode } from "react";
-import { Text, View } from "react-native";
+import { Text, View, type ViewStyle } from "react-native";
 
-import { useTheme } from "../theme/tokens";
+import { type as typeScale, useTheme } from "../theme/tokens";
 
 interface CardProps {
   children: ReactNode;
   title?: string;
-  /** Small uppercase label above the title, e.g. "This month". */
+  /** Small quiet label above the title, e.g. "This month". */
   eyebrow?: string;
+  style?: ViewStyle;
 }
 
-export function Card({ children, title, eyebrow }: CardProps) {
+/** Soft white surface, radius 20, no border in light mode (see theme.card). */
+export function Card({ children, title, eyebrow, style }: CardProps) {
   const theme = useTheme();
 
   return (
-    <View
-      style={{
-        backgroundColor: theme.surface,
-        borderRadius: 14,
-        borderWidth: 1,
-        borderColor: theme.border,
-        padding: 16,
-        gap: 10,
-      }}
-    >
+    <View style={[theme.card, { padding: 16, gap: 10 }, style]}>
       {eyebrow ? (
-        <Text
-          style={{
-            color: theme.textSubtle,
-            fontSize: 11,
-            fontWeight: "700",
-            letterSpacing: 0.8,
-            textTransform: "uppercase",
-          }}
-        >
-          {eyebrow}
-        </Text>
+        <Text style={[typeScale.label, { color: theme.textSubtle }]}>{eyebrow}</Text>
       ) : null}
 
       {title ? (
@@ -43,6 +26,19 @@ export function Card({ children, title, eyebrow }: CardProps) {
       ) : null}
 
       {children}
+    </View>
+  );
+}
+
+/** A section heading above a group of cards or a shelf. */
+export function SectionTitle({ children, action }: { children: string; action?: ReactNode }) {
+  const theme = useTheme();
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+      <Text accessibilityRole="header" style={{ color: theme.text, fontSize: 16, fontWeight: "600" }}>
+        {children}
+      </Text>
+      {action}
     </View>
   );
 }
