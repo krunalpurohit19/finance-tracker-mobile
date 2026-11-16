@@ -123,11 +123,13 @@ export function Amount({
       // The hero must not push the layout apart at the largest system font.
       maxFontSizeMultiplier={big ? 1.4 : 2}
       numberOfLines={1}
-      adjustsFontSizeToFit={big}
+      // Shrink before truncating: a clipped amount is a wrong amount.
+      adjustsFontSizeToFit
+      minimumFontScale={0.7}
       style={{
         color,
         fontSize: SIZES[size],
-        fontWeight: big ? "600" : "600",
+        fontWeight: "600",
         fontVariant: ["tabular-nums"],
         letterSpacing: size === "hero" ? -1 : size === "xl" ? -0.5 : 0,
       }}

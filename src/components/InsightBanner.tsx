@@ -4,7 +4,7 @@ import { Pressable, Text, View } from "react-native";
 
 import type { BudgetProgress } from "../features/budgets/queries";
 import type { Dashboard } from "../features/dashboard/queries";
-import { useTheme } from "../theme/tokens";
+import { palette } from "../theme/tokens";
 
 export interface Insight {
   id: string;
@@ -57,7 +57,6 @@ export function buildInsights(dashboard: Dashboard, budgets: BudgetProgress[] | 
 const dismissed = new Set<string>();
 
 export function InsightBanner({ insights }: { insights: Insight[] }) {
-  const theme = useTheme();
   const [, rerender] = useState(0);
   const [index, setIndex] = useState(0);
 
@@ -68,10 +67,11 @@ export function InsightBanner({ insights }: { insights: Insight[] }) {
   return (
     <View
       accessibilityLiveRegion="polite"
-      style={{ backgroundColor: theme.brand, borderRadius: 20, padding: 16, gap: 8 }}
+      // brand-600 in both themes: white text needs its 6:1, which dark mode's lighter indigo can't give.
+      style={{ backgroundColor: palette.brand[600], borderRadius: 20, padding: 16, gap: 8 }}
     >
       <View style={{ flexDirection: "row", gap: 12 }}>
-        <Text style={{ color: theme.onBrand, fontSize: 15, fontWeight: "500", lineHeight: 21, flex: 1 }}>
+        <Text style={{ color: palette.white, fontSize: 15, fontWeight: "500", lineHeight: 21, flex: 1 }}>
           {current.text}
         </Text>
         <Pressable
@@ -83,7 +83,7 @@ export function InsightBanner({ insights }: { insights: Insight[] }) {
           }}
           style={{ width: 44, height: 44, alignItems: "center", justifyContent: "center", margin: -10 }}
         >
-          <Ionicons name="close" size={20} color={theme.onBrand} />
+          <Ionicons name="close" size={20} color={palette.white} />
         </Pressable>
       </View>
 
@@ -94,10 +94,10 @@ export function InsightBanner({ insights }: { insights: Insight[] }) {
           onPress={() => setIndex((i) => i + 1)}
           style={{ minHeight: 44, marginBottom: -12, flexDirection: "row", alignItems: "center", gap: 6 }}
         >
-          <Text style={{ color: theme.onBrand, fontSize: 12.5, fontWeight: "600", opacity: 0.9 }}>
+          <Text style={{ color: palette.white, fontSize: 12.5, fontWeight: "600", opacity: 0.9 }}>
             {(index % visible.length) + 1} of {visible.length} · Next
           </Text>
-          <Ionicons name="arrow-forward" size={13} color={theme.onBrand} />
+          <Ionicons name="arrow-forward" size={13} color={palette.white} />
         </Pressable>
       ) : null}
     </View>

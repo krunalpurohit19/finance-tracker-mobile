@@ -103,6 +103,7 @@ export default function NewBudgetScreen() {
                   accessibilityRole="radio"
                   accessibilityState={{ selected }}
                   onPress={() => setCategoryId(category.id)}
+                  hitSlop={8}
                   style={{
                     paddingHorizontal: 14,
                     paddingVertical: 9,

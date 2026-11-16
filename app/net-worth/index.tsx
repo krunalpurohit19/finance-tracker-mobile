@@ -232,6 +232,7 @@ function RangeFilter({
             accessibilityRole="radio"
             accessibilityState={{ selected: active }}
             onPress={() => onSelect(range.months)}
+            hitSlop={8}
             style={{
               paddingHorizontal: 12,
               paddingVertical: 6,
@@ -282,7 +283,7 @@ function CompositionBar({ data }: { data: NetWorth }) {
         height: 10,
         borderRadius: 5,
         overflow: "hidden",
-        backgroundColor: theme.surfaceElevated,
+        backgroundColor: theme.fill,
       }}
     >
       <View style={{ width: `${assetShare}%`, backgroundColor: theme.brand }} />

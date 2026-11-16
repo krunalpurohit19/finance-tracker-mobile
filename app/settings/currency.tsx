@@ -90,6 +90,7 @@ export default function CurrencyScreen() {
                   setConfirm("");
                   change.reset();
                 }}
+                hitSlop={8}
                 style={{
                   flexDirection: "row",
                   alignItems: "center",

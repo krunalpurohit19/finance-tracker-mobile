@@ -159,6 +159,7 @@ function Choices({
             accessibilityState={{ selected: active }}
             accessibilityLabel={option.label}
             onPress={() => onSelect(option.value)}
+            hitSlop={8}
             style={{
               flexDirection: "row",
               alignItems: "center",

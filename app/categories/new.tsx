@@ -80,6 +80,7 @@ export default function NewCategoryScreen() {
                 accessibilityRole="radio"
                 accessibilityState={{ selected }}
                 onPress={() => setKind(option)}
+                hitSlop={8}
                 style={{
                   paddingHorizontal: 14,
                   paddingVertical: 9,

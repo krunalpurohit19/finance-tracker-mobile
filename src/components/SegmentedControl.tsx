@@ -40,6 +40,7 @@ export function SegmentedControl<T extends string>({
           >
             <Text
               numberOfLines={1}
+              maxFontSizeMultiplier={1.3}
               style={{
                 color: selected ? theme.text : theme.textMuted,
                 fontSize: 13.5,

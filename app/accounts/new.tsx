@@ -103,6 +103,7 @@ export default function NewAccountScreen() {
                 accessibilityRole="radio"
                 accessibilityState={{ selected }}
                 onPress={() => setType(option)}
+                hitSlop={8}
                 style={{
                   paddingHorizontal: 14,
                   paddingVertical: 9,
@@ -139,6 +140,7 @@ export default function NewAccountScreen() {
                 accessibilityLabel={option.name}
                 accessibilityState={{ selected }}
                 onPress={() => setCurrency(option.code)}
+                hitSlop={8}
                 style={{
                   paddingHorizontal: 13,
                   paddingVertical: 9,

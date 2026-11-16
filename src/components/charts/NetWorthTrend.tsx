@@ -150,7 +150,7 @@ export function NetWorthTrend({
                 numberOfLines={1}
                 style={{
                   color: index === last ? theme.textMuted : theme.textSubtle,
-                  fontSize: 10,
+                  fontSize: 11,
                   fontWeight: index === last ? "700" : "500",
                   textAlign: "center",
                 }}

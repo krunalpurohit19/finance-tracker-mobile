@@ -314,7 +314,7 @@ function SavingsRateHistory({
             >
               {point.savingsRate == null ? "—" : `${point.savingsRate.toFixed(0)}%`}
             </Text>
-            <Text style={{ color: theme.textSubtle, fontSize: 10 }}>{label}</Text>
+            <Text style={{ color: theme.textSubtle, fontSize: 11 }}>{label}</Text>
           </View>
         );
       })}
