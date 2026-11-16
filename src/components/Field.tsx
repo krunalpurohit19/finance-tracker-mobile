@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import { forwardRef, type ComponentRef } from "react";
 import { Text, TextInput, View, type TextInputProps } from "react-native";
 
 import { useTheme } from "../theme/tokens";
@@ -9,7 +9,7 @@ interface FieldProps extends TextInputProps {
   hint?: string;
 }
 
-export const Field = forwardRef<TextInput, FieldProps>(function Field(
+export const Field = forwardRef<ComponentRef<typeof TextInput>, FieldProps>(function Field(
   { label, error, hint, ...inputProps },
   ref,
 ) {

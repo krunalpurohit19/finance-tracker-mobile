@@ -49,7 +49,7 @@ export default function TabsLayout() {
         options={{
           title: "Home",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home-outline" color={color} size={size} />
+            <Ionicons name="home-outline" color={color as string} size={size} />
           ),
         }}
       />
@@ -59,7 +59,7 @@ export default function TabsLayout() {
         options={{
           title: "Activity",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="swap-vertical-outline" color={color} size={size} />
+            <Ionicons name="swap-vertical-outline" color={color as string} size={size} />
           ),
         }}
       />
@@ -99,7 +99,7 @@ export default function TabsLayout() {
         options={{
           title: "Insights",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="bar-chart-outline" color={color} size={size} />
+            <Ionicons name="bar-chart-outline" color={color as string} size={size} />
           ),
         }}
       />
@@ -109,7 +109,7 @@ export default function TabsLayout() {
         options={{
           title: "More",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="ellipsis-horizontal" color={color} size={size} />
+            <Ionicons name="ellipsis-horizontal" color={color as string} size={size} />
           ),
         }}
       />

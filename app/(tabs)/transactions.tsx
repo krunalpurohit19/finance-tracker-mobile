@@ -129,7 +129,7 @@ export default function TransactionsScreen() {
           <View style={{ paddingVertical: 16 }}>
             <ActivityIndicator color={theme.brand} />
           </View>
-        ) : null
+        ) : undefined
       }
     />
   );
