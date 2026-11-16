@@ -1,32 +1,65 @@
 import { useState } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
+import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { money } from "@finance/domain";
+import { ZERO, compare, money, subtract, sum } from "@finance/domain";
 
 import { Amount } from "../../src/components/Amount";
 import { Card } from "../../src/components/Card";
+import { ChipGroup } from "../../src/components/Chip";
 import { EmptyState } from "../../src/components/EmptyState";
 import { Screen } from "../../src/components/Screen";
+import { SegmentedControl } from "../../src/components/SegmentedControl";
+import { ScreenSkeleton } from "../../src/components/Skeleton";
 import { CategoryRow } from "../../src/components/charts/CategoryRow";
 import { IncomeExpenseBars } from "../../src/components/charts/IncomeExpenseBars";
 import { NetWorthTrend } from "../../src/components/charts/NetWorthTrend";
-import { useAnalytics } from "../../src/features/analytics/queries";
+import { SemiGauge } from "../../src/components/charts/SemiGauge";
+import { useAnalytics, type Analytics } from "../../src/features/analytics/queries";
 import { PERIOD_OPTIONS, type PeriodPreset } from "../../src/features/dashboard/queries";
 import { useNetWorth } from "../../src/features/networth/queries";
 import { useTheme } from "../../src/theme/tokens";
+
+const VIEWS = [
+  { value: "spending", label: "Spending" },
+  { value: "cashflow", label: "Cash flow" },
+  { value: "networth", label: "Net worth" },
+] as const;
+type ViewKey = (typeof VIEWS)[number]["value"];
+
+/**
+ * The five biggest categories, and everything else rolled into "Others", each
+ * with its rank colour. Amounts are added with the money helpers; shares are
+ * plain ratios.
+ */
+function rankCategories(rows: Analytics["byCategory"], totalSpent: string, colors: readonly string[]) {
+  const top = rows.slice(0, 5).map((row, index) => ({
+    key: row.categoryId ?? "none",
+    label: row.categoryName,
+    total: row.total,
+    share: row.share,
+    color: colors[index]!,
+  }));
+  if (rows.length > 5) {
+    const rest = subtract(money(totalSpent), sum(top.map((r) => money(r.total))));
+    if (compare(rest, ZERO) > 0) {
+      top.push({
+        key: "others",
+        label: `Others (${rows.length - 5})`,
+        total: rest,
+        share: Math.max(0, 100 - top.reduce((acc, r) => acc + r.share, 0)),
+        color: colors[5]!,
+      });
+    }
+  }
+  return top;
+}
 
 export default function AnalyticsScreen() {
   const theme = useTheme();
   const router = useRouter();
   const [preset, setPreset] = useState<PeriodPreset>("this-month");
+  const [view, setView] = useState<ViewKey>("spending");
   const { data, isPending, isError, error, refetch, isRefetching } = useAnalytics(preset);
   // Net worth has its own range, independent of the period filter above: a
   // position is a running total, and showing only "this month" of it would
@@ -36,9 +69,7 @@ export default function AnalyticsScreen() {
   if (isPending) {
     return (
       <Screen scroll={false}>
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <ActivityIndicator color={theme.brand} />
-        </View>
+        <ScreenSkeleton />
       </Screen>
     );
   }
@@ -62,6 +93,7 @@ export default function AnalyticsScreen() {
     Number(data.totals.income) !== 0 ||
     Number(data.totals.expenses) !== 0 ||
     data.monthly.some((m) => Number(m.income) !== 0 || Number(m.expenses) !== 0);
+  const categories = rankCategories(data.byCategory, data.totals.expenses, theme.category);
 
   return (
     <ScrollView
@@ -70,112 +102,97 @@ export default function AnalyticsScreen() {
       refreshControl={
         <RefreshControl
           refreshing={isRefetching}
-          onRefresh={() => void refetch()}
+          onRefresh={() => {
+            void refetch();
+            void netWorth.refetch();
+          }}
           tintColor={theme.brand}
         />
       }
     >
-      {/* Filters sit in one row above the charts, not between them. */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 8 }}
-      >
-        {PERIOD_OPTIONS.map((option) => {
-          const active = option.value === preset;
-          return (
-            <Pressable
-              key={option.value}
-              accessibilityRole="radio"
-              accessibilityState={{ selected: active }}
-              onPress={() => setPreset(option.value)}
-              style={{
-                paddingHorizontal: 13,
-                paddingVertical: 7,
-                borderRadius: 999,
-                backgroundColor: active ? theme.brand : theme.surface,
-                borderWidth: 1,
-                borderColor: active ? theme.brand : theme.border,
-              }}
-            >
-              <Text
-                style={{
-                  color: active ? theme.onBrand : theme.textMuted,
-                  fontWeight: "600",
-                  fontSize: 13,
-                }}
-              >
-                {option.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
+      {/* Filters sit above the charts, not between them. */}
+      <ChipGroup label="Period" options={PERIOD_OPTIONS} value={preset} onChange={setPreset} />
+      <SegmentedControl label="View" options={VIEWS} value={view} onChange={setView} />
 
-      {!hasAnything ? (
+      {view === "networth" ? (
+        netWorth.data ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Net worth over the last twelve months. Opens the full breakdown."
+            onPress={() => router.push("/net-worth")}
+          >
+            <Card eyebrow="Last 12 months" title="Net worth">
+              <Amount
+                value={money(netWorth.data.netWorth)}
+                currency={netWorth.data.baseCurrency}
+                size="lg"
+                tone="neutral"
+              />
+              <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6 }}>
+                {Number(netWorth.data.monthChange) === 0 ? (
+                  <Text style={{ color: theme.textSubtle, fontSize: 13 }}>Unchanged this month</Text>
+                ) : (
+                  <>
+                    <Amount
+                      value={money(netWorth.data.monthChange)}
+                      currency={netWorth.data.baseCurrency}
+                      size="sm"
+                      showSign
+                    />
+                    <Text style={{ color: theme.textSubtle, fontSize: 13 }}>this month</Text>
+                  </>
+                )}
+              </View>
+              <NetWorthTrend
+                data={netWorth.data.history}
+                currency={netWorth.data.baseCurrency}
+                height={120}
+              />
+            </Card>
+          </Pressable>
+        ) : netWorth.isError ? (
+          <EmptyState
+            icon="cloud-offline-outline"
+            title="Couldn't load your net worth"
+            body="Pull down to try again."
+          />
+        ) : (
+          <ScreenSkeleton />
+        )
+      ) : !hasAnything ? (
         <EmptyState
           icon="bar-chart-outline"
           title="Nothing to chart yet"
           body="Spending trends, category breakdowns and your savings rate appear here once you've recorded a few weeks of activity."
         />
-      ) : (
+      ) : view === "spending" ? (
         <>
-          <Card eyebrow="Earned vs spent" title="Month by month">
-            <IncomeExpenseBars data={data.monthly} currency={currency} />
-          </Card>
+          <Card>
+            {/* The gauge shows the split at a glance; every segment is named,
+                with its share and amount, in the rows beneath it. */}
+            <SemiGauge segments={categories}>
+              <Text style={{ color: theme.textSubtle, fontSize: 12.5, fontWeight: "500" }}>Spent</Text>
+              <Amount value={money(data.totals.expenses)} currency={currency} size="lg" tone="neutral" />
+            </SemiGauge>
 
-          <Card eyebrow="This period" title="Savings">
-            <View style={{ flexDirection: "row", alignItems: "baseline", gap: 10 }}>
-              <Amount value={money(data.totals.net)} currency={currency} size="lg" />
-              <Text style={{ color: theme.textSubtle, fontSize: 14, fontWeight: "600" }}>
-                {data.totals.savingsRate == null
-                  ? "— rate"
-                  : `${data.totals.savingsRate.toFixed(0)}% rate`}
+            {categories.length === 0 ? (
+              <Text style={{ color: theme.textSubtle, fontSize: 13, textAlign: "center" }}>
+                No spending recorded in this range.
               </Text>
-            </View>
-            <SavingsRateHistory data={data.monthly} />
-          </Card>
-
-          {netWorth.data ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Net worth over the last twelve months. Opens the full breakdown."
-              onPress={() => router.push("/net-worth")}
-            >
-              <Card eyebrow="Last 12 months" title="Net worth">
-                <View style={{ flexDirection: "row", alignItems: "baseline", gap: 10 }}>
-                  <Amount
-                    value={money(netWorth.data.netWorth)}
-                    currency={netWorth.data.baseCurrency}
-                    size="lg"
-                    tone="neutral"
+            ) : (
+              <View style={{ gap: 16, paddingTop: 12 }}>
+                {categories.map((row) => (
+                  <CategoryRow
+                    key={row.key}
+                    label={row.label}
+                    total={row.total}
+                    share={row.share}
+                    color={row.color}
+                    currency={currency}
                   />
-                  <Text style={{ color: theme.textSubtle, fontSize: 13 }}>
-                    {Number(netWorth.data.monthChange) === 0
-                      ? "unchanged this month"
-                      : `${money(netWorth.data.monthChange)} this month`}
-                  </Text>
-                </View>
-                <NetWorthTrend
-                  data={netWorth.data.history}
-                  currency={netWorth.data.baseCurrency}
-                  height={110}
-                />
-              </Card>
-            </Pressable>
-          ) : null}
-
-          <Card title="Where it went">
-            {data.byCategory.slice(0, 6).map((c, i) => (
-              <CategoryRow
-                key={c.categoryId ?? "none"}
-                label={c.categoryName}
-                total={c.total}
-                share={c.share}
-                color={theme.category[Math.min(i, 5)]!}
-                currency={currency}
-              />
-            ))}
+                ))}
+              </View>
+            )}
           </Card>
 
           {data.categoryChange.some((c) => Number(c.change) !== 0) ? (
@@ -194,71 +211,64 @@ export default function AnalyticsScreen() {
               {data.topMerchants.slice(0, 8).map((merchant, index) => (
                 <View
                   key={merchant.merchant}
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 10,
-                    paddingVertical: 4,
-                  }}
+                  style={{ flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 4 }}
                 >
                   <Text
-                    style={{
-                      color: theme.textSubtle,
-                      fontSize: 12,
-                      width: 18,
-                      fontVariant: ["tabular-nums"],
-                    }}
+                    style={{ color: theme.textSubtle, fontSize: 12.5, width: 18, fontVariant: ["tabular-nums"] }}
                   >
                     {index + 1}
                   </Text>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ color: theme.text, fontSize: 14 }} numberOfLines={1}>
+                    <Text style={{ color: theme.text, fontSize: 15, fontWeight: "500" }} numberOfLines={1}>
                       {merchant.merchant}
                     </Text>
-                    <Text style={{ color: theme.textSubtle, fontSize: 12 }}>
+                    <Text style={{ color: theme.textSubtle, fontSize: 12.5 }}>
                       {merchant.count} {merchant.count === 1 ? "transaction" : "transactions"}
                     </Text>
                   </View>
-                  <Amount
-                    value={money(merchant.total)}
-                    currency={currency}
-                    size="sm"
-                    tone="neutral"
-                  />
+                  <Amount value={money(merchant.total)} currency={currency} size="sm" tone="neutral" />
                 </View>
               ))}
             </Card>
           ) : null}
+        </>
+      ) : (
+        <>
+          <Card eyebrow="Earned vs spent" title="Month by month">
+            <IncomeExpenseBars data={data.monthly} currency={currency} />
+          </Card>
+
+          <Card eyebrow="This period" title="Savings">
+            <View style={{ flexDirection: "row", alignItems: "baseline", gap: 10 }}>
+              <Amount value={money(data.totals.net)} currency={currency} size="lg" />
+              <Text style={{ color: theme.textSubtle, fontSize: 14, fontWeight: "600" }}>
+                {data.totals.savingsRate == null
+                  ? "— rate"
+                  : `${data.totals.savingsRate.toFixed(0)}% rate`}
+              </Text>
+            </View>
+            <SavingsRateHistory data={data.monthly} />
+          </Card>
 
           {data.byAccount.length > 1 ? (
             <Card title="By account">
               {data.byAccount.map((account) => (
                 <View
                   key={account.accountId}
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 10,
-                    paddingVertical: 4,
-                  }}
+                  style={{ flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 4 }}
                 >
                   <View style={{ flex: 1 }}>
-                    <Text style={{ color: theme.text, fontSize: 14 }} numberOfLines={1}>
+                    <Text style={{ color: theme.text, fontSize: 15, fontWeight: "500" }} numberOfLines={1}>
                       {account.name}
                     </Text>
-                    <Text style={{ color: theme.textSubtle, fontSize: 12 }}>
+                    <Text style={{ color: theme.textSubtle, fontSize: 12.5 }}>
                       {account.transactionCount}{" "}
                       {account.transactionCount === 1 ? "transaction" : "transactions"}
                     </Text>
                   </View>
                   <View style={{ alignItems: "flex-end" }}>
-                    <Amount
-                      value={money(account.expenses)}
-                      currency={account.currency}
-                      size="sm"
-                      tone="expense"
-                    />
-                    <Text style={{ color: theme.textSubtle, fontSize: 11 }}>spent</Text>
+                    <Amount value={money(account.expenses)} currency={account.currency} size="sm" tone="neutral" />
+                    <Text style={{ color: theme.textSubtle, fontSize: 12 }}>spent</Text>
                   </View>
                 </View>
               ))}
