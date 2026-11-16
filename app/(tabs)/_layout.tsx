@@ -1,8 +1,7 @@
 import { useEffect, useRef } from "react";
-import { Ionicons } from "@expo/vector-icons";
 import { Tabs, useRouter } from "expo-router";
-import { Pressable, View } from "react-native";
 
+import { TabBar } from "../../src/components/TabBar";
 import { useGenerateRecurring } from "../../src/features/recurring/queries";
 import { useTheme } from "../../src/theme/tokens";
 
@@ -30,17 +29,13 @@ export default function TabsLayout() {
 
   return (
     <Tabs
+      tabBar={(props) => <TabBar {...props} onAdd={() => router.push("/transaction/new")} />}
       screenOptions={{
         headerStyle: { backgroundColor: theme.background },
         headerTintColor: theme.text,
+        headerTitleStyle: { fontSize: 22, fontWeight: "600" },
+        headerTitleAlign: "left",
         headerShadowVisible: false,
-        tabBarActiveTintColor: theme.brand,
-        tabBarInactiveTintColor: theme.textSubtle,
-        tabBarStyle: {
-          backgroundColor: theme.surface,
-          borderTopColor: theme.border,
-        },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: "600" },
         sceneStyle: { backgroundColor: theme.background },
       }}
     >
@@ -50,9 +45,6 @@ export default function TabsLayout() {
           title: "Home",
           // Home draws its own greeting; a second "Home" title above it is noise.
           headerShown: false,
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home-outline" color={color as string} size={size} />
-          ),
         }}
       />
 
@@ -60,39 +52,13 @@ export default function TabsLayout() {
         name="transactions"
         options={{
           title: "Activity",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="swap-vertical-outline" color={color as string} size={size} />
-          ),
         }}
       />
 
       <Tabs.Screen
         name="add"
         options={{
-          title: "",
-          tabBarAccessibilityLabel: "Add a transaction",
-          tabBarButton: () => (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Add a transaction"
-              onPress={() => router.push("/transaction/new")}
-              style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-              hitSlop={8}
-            >
-              <View
-                style={{
-                  width: 52,
-                  height: 40,
-                  borderRadius: 12,
-                  backgroundColor: theme.brand,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Ionicons name="add" size={26} color={theme.onBrand} />
-              </View>
-            </Pressable>
-          ),
+          title: "Add",
         }}
       />
 
@@ -100,9 +66,6 @@ export default function TabsLayout() {
         name="analytics"
         options={{
           title: "Insights",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="bar-chart-outline" color={color as string} size={size} />
-          ),
         }}
       />
 
@@ -110,9 +73,6 @@ export default function TabsLayout() {
         name="more"
         options={{
           title: "More",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="ellipsis-horizontal" color={color as string} size={size} />
-          ),
         }}
       />
     </Tabs>
