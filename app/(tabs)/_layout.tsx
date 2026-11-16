@@ -48,6 +48,8 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: "Home",
+          // Home draws its own greeting; a second "Home" title above it is noise.
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home-outline" color={color as string} size={size} />
           ),

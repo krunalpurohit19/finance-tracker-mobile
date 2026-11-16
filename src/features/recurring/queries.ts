@@ -40,6 +40,14 @@ export function useRecurring() {
   });
 }
 
+/** Active rules due soon (or overdue), soonest first — the Home "Upcoming" shelf. */
+export function useUpcomingRecurring() {
+  return useQuery({
+    queryKey: [...recurringKeys.all, "upcoming"] as const,
+    queryFn: () => api.get<RecurringRule[]>("/api/v1/recurring/upcoming"),
+  });
+}
+
 export function useToggleRecurring() {
   const queryClient = useQueryClient();
   return useMutation({
