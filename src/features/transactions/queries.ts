@@ -69,17 +69,21 @@ const newIdempotencyKey = () =>
 export function useCreateTransaction() {
   const queryClient = useQueryClient();
   // One key per transaction being entered: if a save times out and is tried
-  // again, the server returns the first result instead of posting twice.
-  // Rotated after each success, so the next transaction is a new one.
-  const idempotencyKey = useRef(newIdempotencyKey());
+  // again unchanged, the server returns the first result instead of posting
+  // twice. Any edit, and every success, starts a new key: a changed form is a
+  // different transaction, not a retry.
+  const attempt = useRef({ key: newIdempotencyKey(), body: "" });
 
   return useMutation({
-    mutationFn: (input: CreateTransactionInput) =>
-      api.post<Transaction>("/api/v1/transactions", input, {
-        "Idempotency-Key": idempotencyKey.current,
-      }),
+    mutationFn: (input: CreateTransactionInput) => {
+      const body = JSON.stringify(input);
+      if (body !== attempt.current.body) attempt.current = { key: newIdempotencyKey(), body };
+      return api.post<Transaction>("/api/v1/transactions", input, {
+        "Idempotency-Key": attempt.current.key,
+      });
+    },
     onSuccess: () => {
-      idempotencyKey.current = newIdempotencyKey();
+      attempt.current = { key: newIdempotencyKey(), body: "" };
       // A transaction moves balances, budgets, insights and net worth, and
       // Home shows all of them: everything cached is stale now.
       void queryClient.invalidateQueries();
