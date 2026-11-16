@@ -4,6 +4,7 @@ import { Pressable, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 
 import { Button } from "../../src/components/Button";
+import { IconTile } from "../../src/components/IconTile";
 import { Screen } from "../../src/components/Screen";
 import { signOut, useSession } from "../../src/lib/auth-client";
 import { useTheme } from "../../src/theme/tokens";
@@ -73,10 +74,7 @@ export default function MoreScreen() {
       {session?.user ? (
         <View
           style={{
-            backgroundColor: theme.surface,
-            borderRadius: 14,
-            borderWidth: 1,
-            borderColor: theme.border,
+            ...theme.card,
             padding: 16,
             gap: 2,
           }}
@@ -90,10 +88,7 @@ export default function MoreScreen() {
 
       <View
         style={{
-          backgroundColor: theme.surface,
-          borderRadius: 14,
-          borderWidth: 1,
-          borderColor: theme.border,
+          ...theme.card,
           overflow: "hidden",
         }}
       >
@@ -108,12 +103,13 @@ export default function MoreScreen() {
               alignItems: "center",
               gap: 14,
               paddingHorizontal: 16,
-              paddingVertical: 14,
+              paddingVertical: 12,
+              minHeight: 44,
               borderTopWidth: index === 0 ? 0 : 1,
-              borderTopColor: theme.border,
+              borderTopColor: theme.fill,
             }}
           >
-            <Ionicons name={item.icon} size={21} color={theme.textMuted} />
+            <IconTile icon={item.icon} color={theme.brand} background={theme.brandSoft} />
             <View style={{ flex: 1 }}>
               <Text style={{ color: theme.text, fontSize: 15, fontWeight: "600" }}>
                 {item.label}

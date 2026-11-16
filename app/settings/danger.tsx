@@ -46,9 +46,7 @@ export default function DangerScreen() {
           gap: 10,
           padding: 14,
           borderRadius: 12,
-          backgroundColor: theme.surface,
-          borderWidth: 1,
-          borderColor: theme.expense,
+          backgroundColor: theme.expenseSoft,
         }}
       >
         <Ionicons name="warning-outline" size={20} color={theme.expense} />

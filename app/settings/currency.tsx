@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SUPPORTED_CURRENCIES } from "@finance/domain";
 
@@ -7,6 +7,7 @@ import { Button } from "../../src/components/Button";
 import { Card } from "../../src/components/Card";
 import { Field } from "../../src/components/Field";
 import { Screen } from "../../src/components/Screen";
+import { ScreenSkeleton } from "../../src/components/Skeleton";
 import { useChangeBaseCurrency, useSettings } from "../../src/features/settings/queries";
 import { ApiRequestError } from "../../src/lib/api";
 import { useTheme } from "../../src/theme/tokens";
@@ -22,9 +23,7 @@ export default function CurrencyScreen() {
   if (settings.isPending) {
     return (
       <Screen scroll={false}>
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <ActivityIndicator color={theme.brand} />
-        </View>
+        <ScreenSkeleton />
       </Screen>
     );
   }
@@ -63,9 +62,7 @@ export default function CurrencyScreen() {
           gap: 10,
           padding: 12,
           borderRadius: 12,
-          backgroundColor: theme.surface,
-          borderWidth: 1,
-          borderColor: theme.warning,
+          backgroundColor: theme.warningSoft,
         }}
       >
         <Ionicons name="alert-circle-outline" size={19} color={theme.warning} />
@@ -100,9 +97,7 @@ export default function CurrencyScreen() {
                   paddingHorizontal: 12,
                   paddingVertical: 8,
                   borderRadius: 999,
-                  backgroundColor: active ? theme.brand : theme.surfaceElevated,
-                  borderWidth: 1,
-                  borderColor: active ? theme.brand : theme.border,
+                  backgroundColor: active ? theme.brand : theme.fill,
                 }}
               >
                 {active ? <Ionicons name="checkmark" size={14} color={theme.onBrand} /> : null}

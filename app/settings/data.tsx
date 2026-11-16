@@ -173,9 +173,7 @@ export default function DataScreen() {
             gap: 10,
             padding: 12,
             borderRadius: 12,
-            backgroundColor: theme.surfaceElevated,
-            borderWidth: 1,
-            borderColor: theme.border,
+            backgroundColor: theme.fill,
           }}
         >
           <Ionicons name="information-circle-outline" size={19} color={theme.textMuted} />

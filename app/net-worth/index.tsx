@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  ActivityIndicator,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -15,6 +14,7 @@ import { Amount } from "../../src/components/Amount";
 import { Card } from "../../src/components/Card";
 import { EmptyState } from "../../src/components/EmptyState";
 import { Screen } from "../../src/components/Screen";
+import { ScreenSkeleton } from "../../src/components/Skeleton";
 import { NetWorthTrend } from "../../src/components/charts/NetWorthTrend";
 import {
   useNetWorth,
@@ -39,9 +39,7 @@ export default function NetWorthScreen() {
   if (isPending) {
     return (
       <Screen scroll={false}>
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <ActivityIndicator color={theme.brand} />
-        </View>
+        <ScreenSkeleton />
       </Screen>
     );
   }
@@ -93,7 +91,7 @@ export default function NetWorthScreen() {
         <Text style={{ color: theme.textSubtle, fontSize: 13, fontWeight: "600" }}>
           Net worth
         </Text>
-        <Amount value={money(data.netWorth)} currency={currency} size="xl" tone="neutral" />
+        <Amount value={money(data.netWorth)} currency={currency} size="hero" tone="neutral" />
         <MonthChange data={data} />
       </View>
 
@@ -238,9 +236,7 @@ function RangeFilter({
               paddingHorizontal: 12,
               paddingVertical: 6,
               borderRadius: 999,
-              backgroundColor: active ? theme.brand : theme.surface,
-              borderWidth: 1,
-              borderColor: active ? theme.brand : theme.border,
+              backgroundColor: active ? theme.brand : theme.fill,
             }}
           >
             <Text
@@ -359,9 +355,7 @@ function AccountSection({
                 tone="neutral"
               />
               {account.currency !== currency && account.convertible ? (
-                <Text style={{ color: theme.textSubtle, fontSize: 11 }}>
-                  {money(account.baseBalance)} {currency}
-                </Text>
+                <Amount value={money(account.baseBalance)} currency={currency} size="sm" tone="neutral" />
               ) : null}
             </View>
 
@@ -388,9 +382,7 @@ function UnconvertedNotice({ data }: { data: NetWorth }) {
         gap: 10,
         padding: 12,
         borderRadius: 12,
-        backgroundColor: theme.surface,
-        borderWidth: 1,
-        borderColor: theme.warning,
+        backgroundColor: theme.warningSoft,
       }}
     >
       <Ionicons name="alert-circle-outline" size={19} color={theme.warning} />

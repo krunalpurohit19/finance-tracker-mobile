@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { ActivityIndicator, Alert, Text, View } from "react-native";
+import { Alert, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { Button } from "../../src/components/Button";
 import { Field } from "../../src/components/Field";
 import { Screen } from "../../src/components/Screen";
+import { ScreenSkeleton } from "../../src/components/Skeleton";
 import { useCategory, useUpdateCategory, useDeleteCategory } from "../../src/features/categories/queries";
 import { ApiRequestError } from "../../src/lib/api";
 import { useTheme } from "../../src/theme/tokens";
@@ -33,9 +34,7 @@ export default function EditCategoryScreen() {
   if (isLoading) {
     return (
       <Screen scroll={false}>
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <ActivityIndicator color={theme.brand} />
-        </View>
+        <ScreenSkeleton />
       </Screen>
     );
   }
@@ -137,9 +136,7 @@ export default function EditCategoryScreen() {
           style={{
             padding: 12,
             borderRadius: 10,
-            backgroundColor: theme.surface,
-            borderWidth: 1,
-            borderColor: theme.expense,
+            backgroundColor: theme.expenseSoft,
           }}
         >
           <Text style={{ color: theme.expense, fontSize: 14 }}>{formError}</Text>

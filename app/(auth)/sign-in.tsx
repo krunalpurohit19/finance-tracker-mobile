@@ -105,9 +105,7 @@ export default function SignInScreen() {
           style={{
             padding: 12,
             borderRadius: 10,
-            backgroundColor: theme.surface,
-            borderWidth: 1,
-            borderColor: theme.expense,
+            backgroundColor: theme.expenseSoft,
           }}
         >
           <Text style={{ color: theme.expense, fontSize: 14 }}>{formError}</Text>

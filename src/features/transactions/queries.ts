@@ -2,7 +2,6 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tansta
 import type { CreateTransactionInput } from "@finance/validation";
 
 import { api } from "../../lib/api";
-import { accountKeys } from "../accounts/queries";
 
 export interface Transaction {
   id: string;
@@ -70,9 +69,9 @@ export function useCreateTransaction() {
     mutationFn: (input: CreateTransactionInput) =>
       api.post<Transaction>("/api/v1/transactions", input),
     onSuccess: () => {
-      // A transaction moves balances, so account data is stale too.
-      void queryClient.invalidateQueries({ queryKey: transactionKeys.all });
-      void queryClient.invalidateQueries({ queryKey: accountKeys.all });
+      // A transaction moves balances, budgets, insights and net worth, and
+      // Home shows all of them: everything cached is stale now.
+      void queryClient.invalidateQueries();
     },
   });
 }
@@ -83,8 +82,7 @@ export function useDeleteTransaction() {
   return useMutation({
     mutationFn: (id: string) => api.delete<{ id: string }>(`/api/v1/transactions/${id}`),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: transactionKeys.all });
-      void queryClient.invalidateQueries({ queryKey: accountKeys.all });
+      void queryClient.invalidateQueries();
     },
   });
 }

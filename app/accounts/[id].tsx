@@ -1,4 +1,4 @@
-import { ActivityIndicator, Alert, Text, View } from "react-native";
+import { Alert, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { money } from "@finance/domain";
 
@@ -7,6 +7,7 @@ import { Button } from "../../src/components/Button";
 import { Card } from "../../src/components/Card";
 import { EmptyState } from "../../src/components/EmptyState";
 import { Screen } from "../../src/components/Screen";
+import { ScreenSkeleton } from "../../src/components/Skeleton";
 import { useAccounts, useArchiveAccount } from "../../src/features/accounts/queries";
 import { useTheme } from "../../src/theme/tokens";
 
@@ -22,9 +23,7 @@ export default function AccountDetailScreen() {
   if (isPending) {
     return (
       <Screen scroll={false}>
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <ActivityIndicator color={theme.brand} />
-        </View>
+        <ScreenSkeleton />
       </Screen>
     );
   }
@@ -66,7 +65,7 @@ export default function AccountDetailScreen() {
         <Text style={{ color: theme.textSubtle, fontSize: 13, fontWeight: "600" }}>
           Current balance
         </Text>
-        <Amount value={money(account.balance)} currency={account.currency} size="xl" />
+        <Amount value={money(account.balance)} currency={account.currency} size="hero" />
         {account.class === "LIABILITY" ? (
           <Text style={{ color: theme.textMuted, fontSize: 13 }}>
             This is a liability, so a negative balance means money owed.

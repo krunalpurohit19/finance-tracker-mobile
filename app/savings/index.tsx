@@ -1,13 +1,15 @@
-import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from "react-native";
+import { RefreshControl, ScrollView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 import { money } from "@finance/domain";
 
-import { Amount } from "../../src/components/Amount";
+import { Amount, useMoneyText } from "../../src/components/Amount";
 import { Button } from "../../src/components/Button";
 import { Card } from "../../src/components/Card";
 import { EmptyState } from "../../src/components/EmptyState";
 import { Screen } from "../../src/components/Screen";
+import { StatusPill } from "../../src/components/StatusPill";
+import { GoalRing } from "../../src/components/charts/GoalRing";
+import { ScreenSkeleton } from "../../src/components/Skeleton";
 import { useGoals, useSavings, type Goal } from "../../src/features/savings/queries";
 import { useTheme } from "../../src/theme/tokens";
 
@@ -29,9 +31,7 @@ export default function SavingsScreen() {
   if (savings.isPending || goals.isPending) {
     return (
       <Screen scroll={false}>
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <ActivityIndicator color={theme.brand} />
-        </View>
+        <ScreenSkeleton />
       </Screen>
     );
   }
@@ -71,7 +71,7 @@ export default function SavingsScreen() {
         <Text style={{ color: theme.textSubtle, fontSize: 13, fontWeight: "600" }}>
           Saved over your lifetime
         </Text>
-        <Amount value={money(data.lifetime)} currency={currency} size="xl" />
+        <Amount value={money(data.lifetime)} currency={currency} size="hero" />
         <Text style={{ color: theme.textMuted, fontSize: 13 }}>
           Everything you&apos;ve earned, less everything you&apos;ve spent. Money you already
           had when you started isn&apos;t counted here.
@@ -128,10 +128,8 @@ export default function SavingsScreen() {
         <Text
           style={{
             color: theme.textSubtle,
-            fontSize: 12,
-            fontWeight: "700",
-            letterSpacing: 0.6,
-            textTransform: "uppercase",
+            fontSize: 12.5,
+            fontWeight: "600",
           }}
         >
           Goals
@@ -159,82 +157,44 @@ export default function SavingsScreen() {
 
 function GoalCard({ goal, currency }: { goal: Goal; currency: string }) {
   const theme = useTheme();
-  const progress = goal.progress ?? 0;
-
-  // Over-funding is reported honestly in the numbers; only the bar is clamped,
-  // because a bar wider than its track has nowhere to go.
-  const barWidth = Math.max(2, Math.min(100, progress));
-  const barColor = goal.achieved ? theme.income : goal.overdue ? theme.warning : theme.brand;
+  const moneyText = useMoneyText();
+  const ringColor = goal.achieved ? theme.income : goal.overdue ? theme.warning : theme.brand;
 
   return (
-    <View
-      style={{
-        backgroundColor: theme.surface,
-        borderRadius: 14,
-        borderWidth: 1,
-        borderColor: theme.border,
-        padding: 16,
-        gap: 10,
-      }}
-    >
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-        <Text
-          style={{ color: theme.text, fontSize: 16, fontWeight: "600", flex: 1 }}
-          numberOfLines={1}
-        >
-          {goal.name}
-        </Text>
-        {goal.achieved ? (
-          <>
-            <Ionicons name="checkmark-circle" size={16} color={theme.income} />
-            <Text style={{ color: theme.income, fontSize: 12, fontWeight: "700" }}>
-              Reached
+    <View style={[theme.card, { padding: 16, gap: 12 }]}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
+        {/* Over-funding is reported honestly in the numbers; only the ring is clamped. */}
+        <GoalRing progress={goal.progress} color={ringColor} />
+        <View style={{ flex: 1, gap: 4 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <Text style={{ color: theme.text, fontSize: 16, fontWeight: "600", flex: 1 }} numberOfLines={1}>
+              {goal.name}
             </Text>
-          </>
-        ) : goal.overdue ? (
-          <>
-            <Ionicons name="time-outline" size={16} color={theme.warning} />
-            <Text style={{ color: theme.warning, fontSize: 12, fontWeight: "700" }}>
-              Past due
+            {goal.achieved ? (
+              <StatusPill label="Reached" tone="good" icon="checkmark-circle" />
+            ) : goal.overdue ? (
+              <StatusPill label="Past due" tone="warn" icon="time" />
+            ) : null}
+          </View>
+          <View style={{ flexDirection: "row", alignItems: "baseline", flexWrap: "wrap", columnGap: 6 }}>
+            <Amount value={money(goal.saved)} currency={currency} size="md" tone="neutral" />
+            <Text style={{ color: theme.textSubtle, fontSize: 13 }}>
+              of {moneyText(money(goal.targetAmount), currency)}
             </Text>
-          </>
-        ) : null}
+          </View>
+        </View>
       </View>
 
-      <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6 }}>
-        <Amount value={money(goal.saved)} currency={currency} size="md" tone="neutral" />
-        <Text style={{ color: theme.textSubtle, fontSize: 14 }}>
-          of {money(goal.targetAmount)}
-        </Text>
-      </View>
-
-      <View style={{ height: 8, borderRadius: 4, backgroundColor: theme.surfaceElevated }}>
-        <View
-          style={{
-            height: 8,
-            borderRadius: 4,
-            width: `${barWidth}%`,
-            backgroundColor: barColor,
-          }}
-        />
-      </View>
-
-      <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 12 }}>
-        <Text style={{ color: theme.textMuted, fontSize: 13 }}>
-          {goal.achieved ? "Target reached" : `${money(goal.remaining)} to go`}
-        </Text>
-        <Text style={{ color: theme.textSubtle, fontSize: 13, fontVariant: ["tabular-nums"] }}>
-          {progress.toFixed(0)}%
-        </Text>
-      </View>
-
-      {goal.requiredMonthly && !goal.achieved ? (
-        <Text style={{ color: theme.textSubtle, fontSize: 13 }}>
-          {goal.overdue
-            ? `Needs ${money(goal.requiredMonthly)} to finish`
-            : `Set aside ${money(goal.requiredMonthly)} a month to hit ${goal.targetDate}`}
-        </Text>
-      ) : null}
+      <Text style={{ color: theme.textMuted, fontSize: 13, lineHeight: 19 }}>
+        {goal.achieved
+          ? "Target reached."
+          : `${moneyText(money(goal.remaining), currency)} to go.`}
+        {goal.requiredMonthly && !goal.achieved
+          ? goal.overdue
+            ? ` Needs ${moneyText(money(goal.requiredMonthly), currency)} to finish.`
+            : ` Set aside ${moneyText(money(goal.requiredMonthly), currency)} a month to hit ${goal.targetDate}.`
+          : ""}
+      </Text>
     </View>
   );
 }

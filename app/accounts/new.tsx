@@ -107,9 +107,7 @@ export default function NewAccountScreen() {
                   paddingHorizontal: 14,
                   paddingVertical: 9,
                   borderRadius: 999,
-                  backgroundColor: selected ? theme.brand : theme.surface,
-                  borderWidth: 1,
-                  borderColor: selected ? theme.brand : theme.border,
+                  backgroundColor: selected ? theme.brand : theme.fill,
                 }}
               >
                 <Text
@@ -145,9 +143,7 @@ export default function NewAccountScreen() {
                   paddingHorizontal: 13,
                   paddingVertical: 9,
                   borderRadius: 999,
-                  backgroundColor: selected ? theme.brand : theme.surface,
-                  borderWidth: 1,
-                  borderColor: selected ? theme.brand : theme.border,
+                  backgroundColor: selected ? theme.brand : theme.fill,
                 }}
               >
                 <Text
@@ -189,9 +185,7 @@ export default function NewAccountScreen() {
           style={{
             padding: 12,
             borderRadius: 10,
-            backgroundColor: theme.surface,
-            borderWidth: 1,
-            borderColor: theme.expense,
+            backgroundColor: theme.expenseSoft,
           }}
         >
           <Text style={{ color: theme.expense, fontSize: 14 }}>{formError}</Text>

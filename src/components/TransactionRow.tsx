@@ -1,7 +1,7 @@
 import { Text, View } from "react-native";
 import { money, negate } from "@finance/domain";
 
-import { Amount, formatMoneySafe, useHideAmounts, useLocale } from "./Amount";
+import { Amount, useMoneyText } from "./Amount";
 import { IconTile } from "./IconTile";
 import type { Transaction } from "../features/transactions/queries";
 import { useTheme } from "../theme/tokens";
@@ -35,8 +35,7 @@ export function DayHeader({ date }: { date: string }) {
  */
 export function TransactionRow({ tx, showDate = false }: { tx: Transaction; showDate?: boolean }) {
   const theme = useTheme();
-  const hidden = useHideAmounts();
-  const locale = useLocale();
+  const moneyText = useMoneyText();
   const isTransfer = tx.type === "TRANSFER";
   const isExpense = tx.type === "EXPENSE";
 
@@ -70,7 +69,7 @@ export function TransactionRow({ tx, showDate = false }: { tx: Transaction; show
         />
         {tx.currency !== tx.baseCurrency ? (
           <Text style={{ color: theme.textSubtle, fontSize: 12 }}>
-            {hidden ? "" : `≈ ${formatMoneySafe(money(tx.baseAmount), { currency: tx.baseCurrency, locale })}`}
+            ≈ {moneyText(money(tx.baseAmount), tx.baseCurrency)}
           </Text>
         ) : null}
       </View>

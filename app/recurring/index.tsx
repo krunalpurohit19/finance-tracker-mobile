@@ -1,5 +1,4 @@
 import {
-  ActivityIndicator,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -12,6 +11,7 @@ import { money, negate } from "@finance/domain";
 import { Amount } from "../../src/components/Amount";
 import { EmptyState } from "../../src/components/EmptyState";
 import { Screen } from "../../src/components/Screen";
+import { ScreenSkeleton } from "../../src/components/Skeleton";
 import {
   useRecurring,
   useToggleRecurring,
@@ -39,9 +39,7 @@ export default function RecurringScreen() {
   if (isPending) {
     return (
       <Screen scroll={false}>
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <ActivityIndicator color={theme.brand} />
-        </View>
+        <ScreenSkeleton />
       </Screen>
     );
   }
@@ -92,10 +90,7 @@ export default function RecurringScreen() {
           <View
             key={rule.id}
             style={{
-              backgroundColor: theme.surface,
-              borderRadius: 14,
-              borderWidth: 1,
-              borderColor: theme.border,
+              ...theme.card,
               padding: 16,
               gap: 8,
               opacity: rule.isActive ? 1 : 0.6,
@@ -138,12 +133,11 @@ export default function RecurringScreen() {
                 accessibilityLabel={`${rule.isActive ? "Pause" : "Resume"} ${rule.name}`}
                 onPress={() => toggle.mutate({ id: rule.id, isActive: !rule.isActive })}
                 style={{
-                  paddingHorizontal: 12,
-                  paddingVertical: 6,
+                  minHeight: 44,
+                  justifyContent: "center",
+                  paddingHorizontal: 16,
                   borderRadius: 999,
-                  borderWidth: 1,
-                  borderColor: theme.border,
-                  backgroundColor: theme.surfaceElevated,
+                  backgroundColor: theme.fill,
                 }}
               >
                 <Text style={{ color: theme.textMuted, fontSize: 13, fontWeight: "600" }}>

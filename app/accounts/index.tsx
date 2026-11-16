@@ -1,4 +1,4 @@
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { money, sum, type Money } from "@finance/domain";
@@ -7,6 +7,7 @@ import { Amount } from "../../src/components/Amount";
 import { Button } from "../../src/components/Button";
 import { EmptyState } from "../../src/components/EmptyState";
 import { Screen } from "../../src/components/Screen";
+import { ScreenSkeleton } from "../../src/components/Skeleton";
 import { useAccounts, type Account } from "../../src/features/accounts/queries";
 import { useTheme } from "../../src/theme/tokens";
 
@@ -47,9 +48,7 @@ export default function AccountsScreen() {
   if (isPending) {
     return (
       <Screen scroll={false}>
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <ActivityIndicator color={theme.brand} />
-        </View>
+        <ScreenSkeleton />
       </Screen>
     );
   }
@@ -103,10 +102,7 @@ export default function AccountsScreen() {
 
       <View
         style={{
-          backgroundColor: theme.surface,
-          borderRadius: 14,
-          borderWidth: 1,
-          borderColor: theme.border,
+          ...theme.card,
           overflow: "hidden",
         }}
       >
@@ -123,7 +119,7 @@ export default function AccountsScreen() {
               paddingHorizontal: 16,
               paddingVertical: 14,
               borderTopWidth: index === 0 ? 0 : 1,
-              borderTopColor: theme.border,
+              borderTopColor: theme.fill,
             }}
           >
             <Ionicons

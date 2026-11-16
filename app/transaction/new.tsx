@@ -1,12 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { createTransactionSchema, positiveMoneyString } from "@finance/validation";
 import { today } from "@finance/domain";
 
+import { AmountInput } from "../../src/components/AmountInput";
 import { Button } from "../../src/components/Button";
+import { Chip } from "../../src/components/Chip";
 import { Field } from "../../src/components/Field";
 import { Screen } from "../../src/components/Screen";
+import { SegmentedControl } from "../../src/components/SegmentedControl";
+import { showToast } from "../../src/components/Toast";
 import { useAccounts } from "../../src/features/accounts/queries";
 import { useCategories, useCreateTransaction } from "../../src/features/transactions/queries";
 import { ApiRequestError } from "../../src/lib/api";
@@ -14,7 +18,7 @@ import { useTheme } from "../../src/theme/tokens";
 
 type TxType = "EXPENSE" | "INCOME" | "TRANSFER";
 
-const TYPES: { value: TxType; label: string }[] = [
+const TYPES: readonly { value: TxType; label: string }[] = [
   { value: "EXPENSE", label: "Expense" },
   { value: "INCOME", label: "Income" },
   { value: "TRANSFER", label: "Transfer" },
@@ -66,7 +70,7 @@ export default function NewTransactionScreen() {
 
   const amountValidation = useMemo(() => {
     if (amount.trim() === "") return { state: "empty" as const };
-    const result = positiveMoneyString.safeParse(amount);
+    const result = positiveMoneyString.safeParse(amount.replace(/\.$/, ""));
     return result.success
       ? { state: "valid" as const }
       : {
@@ -84,7 +88,7 @@ export default function NewTransactionScreen() {
 
     const raw: Record<string, unknown> = {
       type,
-      amount: amount.trim(),
+      amount: amount.replace(/\.$/, ""),
       accountId,
       occurredOn: today("Asia/Kolkata"),
       merchant: merchant.trim() === "" ? undefined : merchant.trim(),
@@ -114,6 +118,7 @@ export default function NewTransactionScreen() {
 
     try {
       await createTransaction.mutateAsync(parsed.data);
+      showToast("Transaction saved");
       router.back();
     } catch (error) {
       if (error instanceof ApiRequestError) {
@@ -141,81 +146,23 @@ export default function NewTransactionScreen() {
         )
       }
     >
-      <View style={{ flexDirection: "row", gap: 8 }}>
-        {TYPES.map((option) => {
-          const selected = option.value === type;
-          return (
-            <Pressable
-              key={option.value}
-              accessibilityRole="radio"
-              accessibilityState={{ selected }}
-              onPress={() => setType(option.value)}
-              style={{
-                flex: 1,
-                paddingVertical: 10,
-                borderRadius: 10,
-                alignItems: "center",
-                backgroundColor: selected ? theme.brand : theme.surface,
-                borderWidth: 1,
-                borderColor: selected ? theme.brand : theme.border,
-              }}
-            >
-              <Text
-                style={{
-                  color: selected ? theme.onBrand : theme.textMuted,
-                  fontWeight: "600",
-                  fontSize: 14,
-                }}
-              >
-                {option.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+      <SegmentedControl label="Transaction type" options={TYPES} value={type} onChange={setType} />
 
-      <View style={{ gap: 8, paddingTop: 8 }}>
-        <Text style={{ color: theme.textSubtle, fontSize: 13, fontWeight: "600" }}>Amount</Text>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-          <Text style={{ color: theme.textMuted, fontSize: 34, fontWeight: "700" }}>
-            {source?.currency ?? "₹"}
-          </Text>
-          <TextInput
-            autoFocus
-            value={amount}
-            onChangeText={setAmount}
-            onBlur={() => setTouched(true)}
-            placeholder="0"
-            placeholderTextColor={theme.textSubtle}
-            keyboardType="decimal-pad"
-            inputMode="decimal"
-            accessibilityLabel="Amount"
-            style={{
-              flex: 1,
-              color: theme.text,
-              fontSize: 34,
-              fontWeight: "700",
-              fontVariant: ["tabular-nums"],
-              paddingVertical: 4,
-            }}
-          />
-        </View>
-        <View
-          style={{ height: 1, backgroundColor: amountError ? theme.expense : theme.border }}
-        />
-        {amountError ? (
-          <Text style={{ color: theme.expense, fontSize: 13 }}>{amountError}</Text>
-        ) : null}
-      </View>
+      {/* Amount stays the largest thing on screen, with its own keypad, so a
+          typical expense is: tap a number, tap save. */}
+      <AmountInput
+        value={amount}
+        onChange={setAmount}
+        currency={source?.currency ?? "INR"}
+        error={amountError}
+      />
 
       {noAccounts ? (
         <View
           style={{
             padding: 14,
             borderRadius: 12,
-            backgroundColor: theme.surface,
-            borderWidth: 1,
-            borderColor: theme.border,
+            backgroundColor: theme.fill,
             gap: 8,
           }}
         >
@@ -291,9 +238,7 @@ export default function NewTransactionScreen() {
               style={{
                 padding: 12,
                 borderRadius: 10,
-                backgroundColor: theme.surface,
-                borderWidth: 1,
-                borderColor: theme.expense,
+                backgroundColor: theme.expenseSoft,
               }}
             >
               <Text style={{ color: theme.expense, fontSize: 14 }}>{formError}</Text>
@@ -339,38 +284,18 @@ function Picker({
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 8 }}
+        style={{ marginHorizontal: -16 }}
+        contentContainerStyle={{ gap: 8, paddingHorizontal: 16, paddingVertical: 6 }}
+        keyboardShouldPersistTaps="handled"
       >
-        {options.map((option) => {
-          const selected = option.id === selectedId;
-          return (
-            <Pressable
-              key={option.id}
-              accessibilityRole="radio"
-              accessibilityState={{ selected }}
-              onPress={() => onSelect(option.id)}
-              style={{
-                paddingHorizontal: 14,
-                paddingVertical: 9,
-                borderRadius: 999,
-                backgroundColor: selected ? theme.brand : theme.surface,
-                borderWidth: 1,
-                borderColor: selected ? theme.brand : theme.border,
-              }}
-            >
-              <Text
-                style={{
-                  color: selected ? theme.onBrand : theme.textMuted,
-                  fontWeight: "600",
-                  fontSize: 14,
-                }}
-              >
-                {option.label}
-                {option.hint ? ` · ${option.hint}` : ""}
-              </Text>
-            </Pressable>
-          );
-        })}
+        {options.map((option) => (
+          <Chip
+            key={option.id}
+            label={option.hint ? `${option.label} · ${option.hint}` : option.label}
+            selected={option.id === selectedId}
+            onPress={() => onSelect(option.id)}
+          />
+        ))}
       </ScrollView>
 
       {error ? <Text style={{ color: theme.expense, fontSize: 13 }}>{error}</Text> : null}

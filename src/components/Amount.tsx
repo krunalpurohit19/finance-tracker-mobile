@@ -58,13 +58,20 @@ export function useLocale(): string {
 /** formatMoney, but a locale tag the runtime rejects can't crash a screen. */
 export function formatMoneySafe(
   value: Money,
-  options: { currency?: string; locale?: string; showSign?: boolean },
+  options: { currency?: string | undefined; locale?: string; showSign?: boolean },
 ): string {
   try {
-    return formatMoney(value, options);
+    return formatMoney(value, { ...options, currency: options.currency ?? "INR" });
   } catch {
-    return formatMoney(value, { ...options, locale: "en-IN" });
+    return formatMoney(value, { ...options, currency: options.currency ?? "INR", locale: "en-IN" });
   }
+}
+
+/** Money as inline text ("₹600 to go"), following the locale and the hide switch. */
+export function useMoneyText(): (value: Money, currency?: string) => string {
+  const locale = useLocale();
+  const hide = useHideAmounts();
+  return (value, currency) => (hide ? "••••" : formatMoneySafe(value, { currency, locale }));
 }
 
 /**

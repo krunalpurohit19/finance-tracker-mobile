@@ -1,9 +1,10 @@
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { DATE_FORMATS, LOCALES, THEMES } from "@finance/validation";
 
 import { Card } from "../../src/components/Card";
 import { Screen } from "../../src/components/Screen";
+import { ScreenSkeleton } from "../../src/components/Skeleton";
 import {
   useSettings,
   useUpdatePreferences,
@@ -45,9 +46,7 @@ export default function PreferencesScreen() {
   if (settings.isPending) {
     return (
       <Screen scroll={false}>
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <ActivityIndicator color={theme.brand} />
-        </View>
+        <ScreenSkeleton />
       </Screen>
     );
   }
@@ -167,9 +166,7 @@ function Choices({
               paddingHorizontal: 12,
               paddingVertical: 8,
               borderRadius: 999,
-              backgroundColor: active ? theme.brand : theme.surfaceElevated,
-              borderWidth: 1,
-              borderColor: active ? theme.brand : theme.border,
+              backgroundColor: active ? theme.brand : theme.fill,
             }}
           >
             {active ? <Ionicons name="checkmark" size={14} color={theme.onBrand} /> : null}

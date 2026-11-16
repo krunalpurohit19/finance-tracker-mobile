@@ -1,9 +1,10 @@
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { useRouter, type Href } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
 import { EmptyState } from "../../src/components/EmptyState";
 import { Screen } from "../../src/components/Screen";
+import { ScreenSkeleton } from "../../src/components/Skeleton";
 import { useSettings } from "../../src/features/settings/queries";
 import { useTheme } from "../../src/theme/tokens";
 
@@ -24,9 +25,7 @@ export default function SettingsScreen() {
   if (isPending) {
     return (
       <Screen scroll={false}>
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <ActivityIndicator color={theme.brand} />
-        </View>
+        <ScreenSkeleton />
       </Screen>
     );
   }
@@ -123,10 +122,8 @@ export default function SettingsScreen() {
           <Text
             style={{
               color: theme.textSubtle,
-              fontSize: 11,
-              fontWeight: "700",
-              letterSpacing: 0.8,
-              textTransform: "uppercase",
+              fontSize: 12.5,
+              fontWeight: "600",
             }}
           >
             {section.title}
@@ -134,10 +131,7 @@ export default function SettingsScreen() {
 
           <View
             style={{
-              backgroundColor: theme.surface,
-              borderRadius: 14,
-              borderWidth: 1,
-              borderColor: theme.border,
+              ...theme.card,
               overflow: "hidden",
             }}
           >
@@ -154,7 +148,7 @@ export default function SettingsScreen() {
                   paddingHorizontal: 16,
                   paddingVertical: 14,
                   borderTopWidth: index === 0 ? 0 : 1,
-                  borderTopColor: theme.border,
+                  borderTopColor: theme.fill,
                 }}
               >
                 <Ionicons

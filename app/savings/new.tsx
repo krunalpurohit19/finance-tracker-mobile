@@ -93,9 +93,7 @@ export default function NewGoalScreen() {
         style={{
           padding: 12,
           borderRadius: 10,
-          backgroundColor: theme.surface,
-          borderWidth: 1,
-          borderColor: theme.border,
+          backgroundColor: theme.fill,
         }}
       >
         <Text style={{ color: theme.textMuted, fontSize: 13, lineHeight: 19 }}>
@@ -110,9 +108,7 @@ export default function NewGoalScreen() {
           style={{
             padding: 12,
             borderRadius: 10,
-            backgroundColor: theme.surface,
-            borderWidth: 1,
-            borderColor: theme.expense,
+            backgroundColor: theme.expenseSoft,
           }}
         >
           <Text style={{ color: theme.expense, fontSize: 14 }}>{formError}</Text>
