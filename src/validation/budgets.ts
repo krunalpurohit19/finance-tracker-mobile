@@ -2,14 +2,8 @@ import { z } from "zod";
 import { startOfMonth, type CalendarDate } from "@finance/domain";
 import { calendarDateString, id, positiveMoneyString } from "./primitives";
 
-/**
- * The share of a budget at which it counts as "near limit".
- *
- * A product constant, defined once. Scattering `0.8` through components is
- * how a threshold ends up meaning three different things on three screens.
- */
-export const NEAR_LIMIT_THRESHOLD = 80;
-
+// "Near limit" is decided by the server (BudgetService.NEAR_LIMIT_PERCENT) and
+// arrives as `status`; the app keeps no threshold of its own.
 export const BUDGET_STATUSES = ["OK", "NEAR_LIMIT", "EXCEEDED"] as const;
 export type BudgetStatus = (typeof BUDGET_STATUSES)[number];
 

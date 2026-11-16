@@ -1,6 +1,6 @@
 import * as SecureStore from "expo-secure-store";
 import Constants from "expo-constants";
-import { Platform } from "react-native";
+import { AppState, Platform } from "react-native";
 import { useState, useEffect } from "react";
 
 /**
@@ -82,6 +82,75 @@ async function updateSession(user: any, access: string, refresh: string) {
   }
   emit();
 }
+
+// ─── Token refresh ───────────────────────────────────────────────────────────
+
+export type RefreshOutcome = "ok" | "rejected" | "offline";
+
+let refreshInFlight: Promise<RefreshOutcome> | null = null;
+
+/**
+ * Swap the stored refresh token for a new pair. One shared call at a time: the
+ * server rotates the refresh token, so two parallel refreshes would have the
+ * second one rejected and sign the user out.
+ *
+ * "rejected" (the server said no) signs out. "offline" (no answer, or a 5xx /
+ * 429) keeps the session: being in a tunnel is not a reason to lose it.
+ */
+export function refreshSession(): Promise<RefreshOutcome> {
+  refreshInFlight ??= doRefresh().finally(() => {
+    refreshInFlight = null;
+  });
+  return refreshInFlight;
+}
+
+async function doRefresh(): Promise<RefreshOutcome> {
+  const refreshToken = await SecureStore.getItemAsync("finance.refresh_token").catch(() => null);
+  if (!refreshToken) {
+    await updateSession(null, "", "");
+    return "rejected";
+  }
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken }),
+    });
+  } catch {
+    return "offline";
+  }
+  if (res.status === 401 || res.status === 422) {
+    await updateSession(null, "", "");
+    return "rejected";
+  }
+  const json = await res.json().catch(() => null);
+  if (!res.ok || !json?.ok || !json.data?.accessToken || !json.data?.refreshToken) return "offline";
+  await updateSession(json.data.user, json.data.accessToken, json.data.refreshToken);
+  return "ok";
+}
+
+/** Seconds until the access token expires; 0 if there is none or it can't be read. */
+function accessTokenSecondsLeft(): number {
+  try {
+    const payload = getSessionToken()?.split(".")[1];
+    if (!payload) return 0;
+    const { exp } = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
+    return Math.max(0, exp - Date.now() / 1000);
+  } catch {
+    return 0;
+  }
+}
+
+/** Refresh ahead of time when the token has under 5 minutes left. */
+export async function refreshIfExpiring(): Promise<void> {
+  if (currentSession && accessTokenSecondsLeft() < 300) await refreshSession();
+}
+
+// Coming back to the app after an hour should not start with a round of 401s.
+AppState.addEventListener("change", (state) => {
+  if (state === "active") void refreshIfExpiring();
+});
 
 // ─── Drop-in Replacements for Better Auth Actions ──────────────────────────
 

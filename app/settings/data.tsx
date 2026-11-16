@@ -10,7 +10,7 @@ import { Button } from "../../src/components/Button";
 import { Card } from "../../src/components/Card";
 import { Screen } from "../../src/components/Screen";
 import { useImportPreview, useSettings } from "../../src/features/settings/queries";
-import { API_BASE_URL, getSessionToken } from "../../src/lib/auth-client";
+import { API_BASE_URL, getSessionToken, refreshIfExpiring } from "../../src/lib/auth-client";
 import { useTheme } from "../../src/theme/tokens";
 
 type Status = { kind: "idle" } | { kind: "busy" } | { kind: "error"; message: string };
@@ -54,6 +54,7 @@ export default function DataScreen() {
       const url = new URL(`${API_BASE_URL}/api/v1/settings/export`);
       url.searchParams.set("format", format);
 
+      await refreshIfExpiring(); // this fetch bypasses api.ts, so no 401 retry
       const response = await fetch(url.toString(), {
         headers: { Authorization: `Bearer ${getSessionToken() || ""}` },
       });

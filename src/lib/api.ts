@@ -1,6 +1,6 @@
 import type { ErrorCode, FieldErrors } from "@finance/domain";
 
-import { API_BASE_URL, getSessionToken } from "./auth-client";
+import { API_BASE_URL, getSessionToken, refreshSession } from "./auth-client";
 
 /**
  * Typed client for the API's response envelope.
@@ -42,24 +42,33 @@ async function request<T>(
     if (value !== undefined) url.searchParams.set(key, String(value));
   }
 
-  let response: Response;
-  try {
-    response = await fetch(url.toString(), {
-      ...rest,
-      headers: {
-        "Content-Type": "application/json",
-        // Attaches the stored JWT token
-        Authorization: `Bearer ${getSessionToken() || ""}`,
-        ...(rest.headers ?? {}),
-      },
-    });
-  } catch {
-    // A network failure is not the same as a rejected request, and the
-    // message a user sees should say so rather than "something went wrong".
-    throw new ApiRequestError(0, {
-      code: "INTERNAL",
-      message: "Can't reach the server. Check your connection and try again.",
-    });
+  const send = async (): Promise<Response> => {
+    try {
+      return await fetch(url.toString(), {
+        ...rest,
+        headers: {
+          "Content-Type": "application/json",
+          // Attaches the stored JWT token
+          Authorization: `Bearer ${getSessionToken() || ""}`,
+          ...(rest.headers ?? {}),
+        },
+      });
+    } catch {
+      // A network failure is not the same as a rejected request, and the
+      // message a user sees should say so rather than "something went wrong".
+      throw new ApiRequestError(0, {
+        code: "INTERNAL",
+        message: "Can't reach the server. Check your connection and try again.",
+      });
+    }
+  };
+
+  let response = await send();
+  // An expired access token: refresh once (shared across parallel requests)
+  // and retry once. Auth endpoints answer 401 for wrong credentials, never
+  // for an expired session, so they are left alone.
+  if (response.status === 401 && !path.startsWith("/api/auth/")) {
+    if ((await refreshSession()) === "ok") response = await send();
   }
 
   let body: Envelope<T>;
