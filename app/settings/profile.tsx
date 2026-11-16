@@ -51,10 +51,17 @@ export default function ProfileScreen() {
         <Text style={{ color: theme.text, fontSize: 16 }}>
           {settings.data?.profile.email ?? "—"}
         </Text>
+{settings.data?.profile.emailVerified ? (
+          <Text style={{ color: theme.income, fontSize: 13, fontWeight: "600" }}>Verified</Text>
+        ) : settings.data ? (
+          <Button
+            label="Verify this email"
+            variant="secondary"
+            onPress={() => router.push("/settings/verify-email")}
+          />
+        ) : null}
         <Text style={{ color: theme.textSubtle, fontSize: 13, lineHeight: 19 }}>
-          Your email is your sign-in identity, so changing it needs a verified new address. That
-          needs a mail transport this build doesn&apos;t have — it isn&apos;t editable here
-          rather than being editable and unverified.
+          Your email is how you sign in and reset your password. It can&apos;t be changed here yet.
         </Text>
       </View>
 

@@ -3,7 +3,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../lib/api";
 
 export interface Settings {
-  profile: { id: string; name: string | null; email: string; createdAt: string };
+  profile: {
+    id: string;
+    name: string | null;
+    email: string;
+    emailVerified?: boolean;
+    createdAt: string;
+  };
   preferences: {
     baseCurrency: string;
     locale: string;

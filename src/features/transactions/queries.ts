@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { CreateTransactionInput } from "@finance/validation";
 
@@ -62,13 +63,23 @@ export function useCategories(kind?: "EXPENSE" | "INCOME") {
   });
 }
 
+const newIdempotencyKey = () =>
+  `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+
 export function useCreateTransaction() {
   const queryClient = useQueryClient();
+  // One key per transaction being entered: if a save times out and is tried
+  // again, the server returns the first result instead of posting twice.
+  // Rotated after each success, so the next transaction is a new one.
+  const idempotencyKey = useRef(newIdempotencyKey());
 
   return useMutation({
     mutationFn: (input: CreateTransactionInput) =>
-      api.post<Transaction>("/api/v1/transactions", input),
+      api.post<Transaction>("/api/v1/transactions", input, {
+        "Idempotency-Key": idempotencyKey.current,
+      }),
     onSuccess: () => {
+      idempotencyKey.current = newIdempotencyKey();
       // A transaction moves balances, budgets, insights and net worth, and
       // Home shows all of them: everything cached is stale now.
       void queryClient.invalidateQueries();

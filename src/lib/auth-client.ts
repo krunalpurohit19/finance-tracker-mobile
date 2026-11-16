@@ -181,6 +181,13 @@ export const signUp = {
   email: (data: any) => requestAuth("/api/auth/sign-up", data),
 };
 
+/** Emails a 6-digit code if the address has an account. The answer never says which. */
+export const forgotPassword = (email: string) => requestAuth("/api/auth/forgot-password", { email });
+
+/** Sets a new password with the emailed code; every device is signed out. */
+export const resetPassword = (data: { email: string; code: string; password: string }) =>
+  requestAuth("/api/auth/reset-password", data);
+
 export const signOut = async () => {
   const token = getSessionToken();
   if (token) {

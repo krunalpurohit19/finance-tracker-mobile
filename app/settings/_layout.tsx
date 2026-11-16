@@ -16,6 +16,7 @@ export default function SettingsLayout() {
     >
       <Stack.Screen name="index" options={{ title: "Settings" }} />
       <Stack.Screen name="profile" options={{ title: "Profile" }} />
+      <Stack.Screen name="verify-email" options={{ title: "Verify email" }} />
       <Stack.Screen name="preferences" options={{ title: "Appearance & format" }} />
       <Stack.Screen name="currency" options={{ title: "Base currency" }} />
       <Stack.Screen name="data" options={{ title: "Your data" }} />

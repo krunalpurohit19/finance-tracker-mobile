@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { signInSchema } from "@finance/validation";
 
@@ -99,6 +99,15 @@ export default function SignInScreen() {
         onSubmitEditing={onSubmit}
         returnKeyType="go"
       />
+
+      <Pressable
+        onPress={() => router.push("/(auth)/forgot-password")}
+        accessibilityRole="link"
+        hitSlop={12}
+        style={{ alignSelf: "flex-start", minHeight: 44, justifyContent: "center" }}
+      >
+        <Text style={{ color: theme.brand, fontSize: 15, fontWeight: "600" }}>Forgot password?</Text>
+      </Pressable>
 
       {formError ? (
         <View

@@ -35,5 +35,12 @@ export const signUpSchema = z.object({
   password,
 });
 
+export const emailCode = z
+  .string()
+  .trim()
+  .regex(/^\d{6}$/, "Enter the 6-digit code");
+
+export const resetPasswordSchema = z.object({ email, code: emailCode, password });
+
 export type SignInInput = z.infer<typeof signInSchema>;
 export type SignUpInput = z.infer<typeof signUpSchema>;
