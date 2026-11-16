@@ -15,9 +15,9 @@ import { Amount } from "../../src/components/Amount";
 import { Card } from "../../src/components/Card";
 import { EmptyState } from "../../src/components/EmptyState";
 import { Screen } from "../../src/components/Screen";
-import { MonthlyBars } from "../../src/components/charts/MonthlyBars";
+import { CategoryRow } from "../../src/components/charts/CategoryRow";
+import { IncomeExpenseBars } from "../../src/components/charts/IncomeExpenseBars";
 import { NetWorthTrend } from "../../src/components/charts/NetWorthTrend";
-import { RankedBars } from "../../src/components/charts/RankedBars";
 import { useAnalytics } from "../../src/features/analytics/queries";
 import { PERIOD_OPTIONS, type PeriodPreset } from "../../src/features/dashboard/queries";
 import { useNetWorth } from "../../src/features/networth/queries";
@@ -121,7 +121,7 @@ export default function AnalyticsScreen() {
       ) : (
         <>
           <Card eyebrow="Earned vs spent" title="Month by month">
-            <MonthlyBars data={data.monthly} currency={currency} />
+            <IncomeExpenseBars data={data.monthly} currency={currency} />
           </Card>
 
           <Card eyebrow="This period" title="Savings">
@@ -166,16 +166,16 @@ export default function AnalyticsScreen() {
           ) : null}
 
           <Card title="Where it went">
-            <RankedBars
-              rows={data.byCategory.map((c) => ({
-                key: c.categoryId ?? "none",
-                label: c.categoryName,
-                value: c.total,
-                share: c.share,
-                color: c.color,
-              }))}
-              currency={currency}
-            />
+            {data.byCategory.slice(0, 6).map((c, i) => (
+              <CategoryRow
+                key={c.categoryId ?? "none"}
+                label={c.categoryName}
+                total={c.total}
+                share={c.share}
+                color={theme.category[Math.min(i, 5)]!}
+                currency={currency}
+              />
+            ))}
           </Card>
 
           {data.categoryChange.some((c) => Number(c.change) !== 0) ? (

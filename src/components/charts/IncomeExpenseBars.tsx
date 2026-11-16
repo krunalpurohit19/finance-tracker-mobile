@@ -9,7 +9,7 @@ export interface MonthPoint {
   expenses: string;
 }
 
-interface MonthlyBarsProps {
+interface IncomeExpenseBarsProps {
   data: MonthPoint[];
   currency: string;
   height?: number;
@@ -33,7 +33,7 @@ function monthLabel(month: string): string {
  * One shared scale for both series. Two y-axes would let the reader compare
  * heights that are not comparable.
  */
-export function MonthlyBars({ data, currency, height = 132 }: MonthlyBarsProps) {
+export function IncomeExpenseBars({ data, currency, height = 132 }: IncomeExpenseBarsProps) {
   const theme = useTheme();
 
   const max = data.reduce(
