@@ -1,12 +1,13 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, RefreshControl, Text, View } from "react-native";
 import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import { money, negate } from "@finance/domain";
 
-import { Amount } from "../../src/components/Amount";
+import { Card } from "../../src/components/Card";
+import { ChipGroup } from "../../src/components/Chip";
 import { EmptyState } from "../../src/components/EmptyState";
 import { Screen } from "../../src/components/Screen";
+import { ScreenSkeleton } from "../../src/components/Skeleton";
+import { DayHeader, TransactionRow } from "../../src/components/TransactionRow";
 import { useTransactions, type Transaction } from "../../src/features/transactions/queries";
 import { useTheme } from "../../src/theme/tokens";
 
@@ -21,15 +22,13 @@ function groupByDate(items: Transaction[]) {
   return groups;
 }
 
-function formatDay(date: string): string {
-  const [y, m, d] = date.split("-").map(Number) as [number, number, number];
-  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-IN", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-    timeZone: "UTC",
-  });
-}
+const FILTERS = [
+  { value: "ALL", label: "All" },
+  { value: "EXPENSE", label: "Spending" },
+  { value: "INCOME", label: "Income" },
+  { value: "TRANSFER", label: "Transfers" },
+] as const;
+type Filter = (typeof FILTERS)[number]["value"];
 
 export default function TransactionsScreen() {
   const theme = useTheme();
@@ -37,15 +36,19 @@ export default function TransactionsScreen() {
   const { data, isPending, isError, error, refetch, isRefetching, fetchNextPage, hasNextPage } =
     useTransactions();
 
+  const [filter, setFilter] = useState<Filter>("ALL");
+
   const items = useMemo(() => data?.pages.flatMap((p) => p.items) ?? [], [data]);
-  const groups = useMemo(() => groupByDate(items), [items]);
+  // Filters what has been loaded; scrolling on keeps loading more to filter.
+  const groups = useMemo(
+    () => groupByDate(filter === "ALL" ? items : items.filter((tx) => tx.type === filter)),
+    [items, filter],
+  );
 
   if (isPending) {
     return (
       <Screen scroll={false}>
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <ActivityIndicator color={theme.brand} />
-        </View>
+        <ScreenSkeleton />
       </Screen>
     );
   }
@@ -95,33 +98,22 @@ export default function TransactionsScreen() {
         if (hasNextPage) void fetchNextPage();
       }}
       onEndReachedThreshold={0.5}
+      ListHeaderComponent={
+        <ChipGroup label="Show" options={FILTERS} value={filter} onChange={setFilter} />
+      }
+      ListEmptyComponent={
+        <Text style={{ color: theme.textSubtle, fontSize: 14, textAlign: "center", paddingVertical: 24 }}>
+          Nothing of this kind in what's loaded so far.
+        </Text>
+      }
       renderItem={({ item: group }) => (
         <View style={{ gap: 8 }}>
-          <Text
-            style={{
-              color: theme.textSubtle,
-              fontSize: 12,
-              fontWeight: "700",
-              letterSpacing: 0.6,
-              textTransform: "uppercase",
-            }}
-          >
-            {formatDay(group.date)}
-          </Text>
-
-          <View
-            style={{
-              backgroundColor: theme.surface,
-              borderRadius: 14,
-              borderWidth: 1,
-              borderColor: theme.border,
-              overflow: "hidden",
-            }}
-          >
-            {group.items.map((tx, index) => (
-              <Row key={tx.id} tx={tx} first={index === 0} />
+          <DayHeader date={group.date} />
+          <Card style={{ paddingVertical: 8, gap: 0 }}>
+            {group.items.map((tx) => (
+              <TransactionRow key={tx.id} tx={tx} />
             ))}
-          </View>
+          </Card>
         </View>
       )}
       ListFooterComponent={
@@ -132,64 +124,5 @@ export default function TransactionsScreen() {
         ) : undefined
       }
     />
-  );
-}
-
-function Row({ tx, first }: { tx: Transaction; first: boolean }) {
-  const theme = useTheme();
-
-  const isTransfer = tx.type === "TRANSFER";
-  const isExpense = tx.type === "EXPENSE";
-
-  // Expenses are shown negative so the sign carries the direction — the row
-  // never depends on colour alone to say which way money moved.
-  const displayed = isExpense ? negate(money(tx.amount)) : money(tx.amount);
-
-  const title = tx.merchant ?? tx.categoryName ?? (isTransfer ? "Transfer" : tx.accountName);
-  const subtitle = isTransfer
-    ? `${tx.accountName} → ${tx.transferAccountName ?? ""}`
-    : `${tx.categoryName ?? "Uncategorised"} · ${tx.accountName}`;
-
-  return (
-    <View
-      style={{
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 12,
-        paddingHorizontal: 16,
-        paddingVertical: 13,
-        borderTopWidth: first ? 0 : 1,
-        borderTopColor: theme.border,
-      }}
-    >
-      <Ionicons
-        name={isTransfer ? "swap-horizontal" : isExpense ? "arrow-up" : "arrow-down"}
-        size={18}
-        color={isTransfer ? theme.textMuted : isExpense ? theme.expense : theme.income}
-      />
-
-      <View style={{ flex: 1 }}>
-        <Text style={{ color: theme.text, fontSize: 15, fontWeight: "600" }} numberOfLines={1}>
-          {title}
-        </Text>
-        <Text style={{ color: theme.textSubtle, fontSize: 13 }} numberOfLines={1}>
-          {subtitle}
-        </Text>
-      </View>
-
-      <View style={{ alignItems: "flex-end" }}>
-        <Amount
-          value={displayed}
-          currency={tx.currency}
-          size="md"
-          tone={isTransfer ? "neutral" : "auto"}
-        />
-        {tx.currency !== tx.baseCurrency ? (
-          <Text style={{ color: theme.textSubtle, fontSize: 12 }}>
-            ≈ {tx.baseAmount} {tx.baseCurrency}
-          </Text>
-        ) : null}
-      </View>
-    </View>
   );
 }
